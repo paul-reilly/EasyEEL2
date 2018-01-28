@@ -9,27 +9,41 @@
 class App
 {
 public:
-    App()  :  mVM(getThis(), {"@code", "@bling", "@blop", "@blam"}, "../../../script.eel"),
+    App()  :  mVM(getThis(), {"@code", "@bling", "@blop", "@blam"}, "script.eel"),
               mMemberValue(19.)
     {
         mVM.registerFunction("sayHello",       0, &App::sayHello);
         mVM.registerFunction("getMemberValue", 0, &App::getMemberValue);
         mVM.registerFunction("addTwoNumbers",  2, &App::addTwoNumbers);
         mVM.registerFunction("print",          1, &App::print);
-        //mResults.SetLen(2048);
-        mVM.compileFile(mResults);
-        if (mResults.GetLength() > 0) std::cout << mResults.Get() << std::endl;
-        double *d = mVM.registerVar("d");
-        double *a = mVM.registerVar("a");
-        std::cout << "Executing code handle..." << std::endl;
-        mVM.executeHandle(0);
-        std::cout << "d is now: " << *d << "\n";
-        std::cout << "a is now: " << *a << "\n";
-        int c;
-        std::cin >> c;
+        d = mVM.registerVar("d");
+        a = mVM.registerVar("a");
+        compileAndExecute();
     };
 
     ~App() {};
+
+    void getUserInput(WDL_FastString& mResults)
+    {
+        char input;
+        std::cout << "Enter key.. (R)ecompile, any other key to exit\n";
+        std::cin >> input;
+        if ((char)tolower(input) == 'r') { mResults.Set(""); compileAndExecute(); }
+    }
+
+    void compileAndExecute()
+    {
+        mVM.compileFile(mResults);
+        if (mResults.GetLength() == 0) {
+            std::cout << "Executing code handle..." << std::endl;
+            mVM.executeHandle(0);
+            std::cout << "d is now: " << *d << "\n";
+            std::cout << "a is now: " << *a << "\n";
+        } else {
+            std::cout << mResults.Get() << std::endl; 
+        }
+        getUserInput(mResults);
+     }
 
     static EEL_F NSEEL_CGEN_CALL print(void *ctx, INT_PTR nop, EEL_F **params)
     {
@@ -50,9 +64,9 @@ public:
 
     static EEL_F NSEEL_CGEN_CALL getMemberValue(void *ctx, INT_PTR nop, EEL_F **params)
     {
-        App* _this = (App*)ctx;
-        std::cout << "Object value is.. " << _this->mMemberValue << std::endl;
-        return _this->mMemberValue;
+        App* this_ = (App*)ctx;
+        std::cout << "Object value is.. " << this_->mMemberValue << std::endl;
+        return this_->mMemberValue;
     };
 
     App* getThis() { return this; }
@@ -61,6 +75,7 @@ private:
     EELVM mVM;
     WDL_FastString mResults;
     double mMemberValue;
+    double* d, *a;
 };
 
 int main(int arg, char** argv)
