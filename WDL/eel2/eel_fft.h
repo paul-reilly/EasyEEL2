@@ -3,7 +3,7 @@
 
 #include "../fft.h"
 #if WDL_FFT_REALSIZE != EEL_F_SIZE
-#error WDL_FFT_REALSIZE -- EEL_F_SIZE size mismatch
+//#error WDL_FFT_REALSIZE -- EEL_F_SIZE size mismatch
 #endif
 
 #ifndef EEL_FFT_MINBITLEN

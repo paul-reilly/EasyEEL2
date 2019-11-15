@@ -141,6 +141,7 @@ class eelScriptInst {
       char *str;
       NSEEL_CODEHANDLE ch;
     };
+    int m_eval_depth;
     WDL_TypedBuf<evalCacheEnt> m_eval_cache;
     virtual char *evalCacheGet(const char *str, NSEEL_CODEHANDLE *ch);
     virtual void evalCacheDispose(char *key, NSEEL_CODEHANDLE ch);
@@ -212,6 +213,9 @@ class eelScriptInst {
   #define EEL_EVAL_GET_CACHED(str, ch) ((eelScriptInst *)opaque)->evalCacheGet(str,&(ch))
   #define EEL_EVAL_SET_CACHED(str, ch) ((eelScriptInst *)opaque)->evalCacheDispose(str,ch)
   #define EEL_EVAL_GET_VMCTX(opaque) (((eelScriptInst *)opaque)->m_vm)
+  #define EEL_EVAL_SCOPE_ENTER (((eelScriptInst *)opaque)->m_eval_depth < 3 ? \
+                                 ++((eelScriptInst *)opaque)->m_eval_depth : 0)
+  #define EEL_EVAL_SCOPE_LEAVE ((eelScriptInst *)opaque)->m_eval_depth--;
   #include "eel_eval.h"
 
 static EEL_F NSEEL_CGEN_CALL _eel_defer(void *opaque, EEL_F *s)
@@ -273,13 +277,14 @@ static EEL_F NSEEL_CGEN_CALL _eel_atexit(void *opaque, EEL_F *s)
 #endif
 
 
+#define opaque ((void *)this)
+
 eelScriptInst::eelScriptInst() : m_loaded_fnlist(false)
 {
 #ifndef EELSCRIPT_NO_FILE
   memset(m_handles,0,sizeof(m_handles));
 #endif
   m_vm = NSEEL_VM_alloc();
-  void *opaque = (void*)this;
 #ifdef EEL_STRING_DEBUGOUT
   if (!m_vm) EEL_STRING_DEBUGOUT("NSEEL_VM_alloc(): failed");
 #endif
@@ -297,6 +302,9 @@ eelScriptInst::eelScriptInst() : m_loaded_fnlist(false)
   m_gfx_state = new eel_lice_state(m_vm,this,EELSCRIPT_LICE_MAX_IMAGES,EELSCRIPT_LICE_MAX_FONTS);
 
   m_gfx_state->resetVarsToStock();
+#endif
+#ifndef EELSCRIPT_NO_EVAL
+  m_eval_depth=0;
 #endif
 }
 
@@ -335,7 +343,6 @@ eelScriptInst::~eelScriptInst()
 
 bool eelScriptInst::GetFilenameForParameter(EEL_F idx, WDL_FastString *fs, int iswrite)
 {
-  void *opaque = this;
   const char *fmt = EEL_STRING_GET_FOR_INDEX(idx,NULL);
   if (!fmt) return false;
   fs->Set(fmt);
@@ -374,7 +381,6 @@ int eelScriptInst::runcode(const char *codeptr, int showerr, const char *showerr
       if (showerr) 
       {
 #ifdef EEL_STRING_DEBUGOUT
-        void *opaque = (void*)this;
         if (showerr==2)
         {
           EEL_STRING_DEBUGOUT("Warning: %s:%s",WDL_get_filepart(showerrfn),err);
@@ -391,6 +397,38 @@ int eelScriptInst::runcode(const char *codeptr, int showerr, const char *showerr
     {
       if (code)
       {
+#ifdef EELSCRIPT_DO_DISASSEMBLE
+        codeHandleType *p = (codeHandleType*)code;
+
+        char buf[512];
+        buf[0]=0;
+#ifdef _WIN32
+        GetTempPath(sizeof(buf)-64,buf);
+        lstrcatn(buf,"jsfx-out",sizeof(buf));
+#else
+        lstrcpyn_safe(buf,"/tmp/jsfx-out",sizeof(buf));
+#endif
+        FILE *fp = fopen(buf,"wb");
+        if (fp)
+        {
+          fwrite(p->code,1,p->code_size,fp);
+          fclose(fp);
+          char buf2[2048];
+#ifdef _WIN32
+          snprintf(buf2,sizeof(buf2),"disasm \"%s\"",buf);
+#else
+  #ifdef __aarch64__
+          snprintf(buf2,sizeof(buf2), "objdump -D -b binary -maarch64 \"%s\"",buf);
+  #elif defined(__LP64__)
+          snprintf(buf2,sizeof(buf2),"distorm3 --b64 \"%s\"",buf);
+  #else
+          snprintf(buf2,sizeof(buf2),"distorm3 --b32 \"%s\"",buf);
+  #endif
+#endif
+          system(buf2);
+        }
+#endif
+
         if (doExec) NSEEL_code_execute(code);
         if (canfree) NSEEL_code_free(code);
         else m_code_freelist.Add((void*)code);
@@ -479,7 +517,6 @@ int eelScriptInst::loadfile(const char *fn, const char *callerfn, bool allowstdi
     if (callerfn)
     {
 #ifdef EEL_STRING_DEBUGOUT
-      void *opaque = (void *)this;
       EEL_STRING_DEBUGOUT("@import: can't import \"-\" (stdin)");
 #endif
       return -1;
@@ -513,7 +550,6 @@ int eelScriptInst::loadfile(const char *fn, const char *callerfn, bool allowstdi
   if (!fp)
   {
 #ifdef EEL_STRING_DEBUGOUT
-    void *opaque = (void *)this;
     if (callerfn)
       EEL_STRING_DEBUGOUT("Warning: @import could not open '%s'",fn);
     else
@@ -647,7 +683,6 @@ void eelScriptInst::runCodeQ(WDL_Queue *q, const char *callername)
       free(sv);
 #ifdef EEL_STRING_DEBUGOUT
       const char *err = NSEEL_code_getcodeerror(m_vm);
-      void *opaque = (void *)this;
       if (err) EEL_STRING_DEBUGOUT("%s: error in code: %s",callername,err);
 #endif
     }
@@ -687,11 +722,20 @@ void EELScript_GenerateFunctionList(WDL_PtrList<const char> *fs)
   while (*p) { fs->Add(p); p += strlen(p) + 1; }
 #ifndef EELSCRIPT_NO_EVAL
   fs->Add("atexit\t\"code\"\t"
-    "Adds code to be executed when the script finishes.");
+#ifndef EELSCRIPT_HELP_NO_DEFER_DESC
+    "Adds code to be executed when the script finishes."
+#endif
+    );
   fs->Add("defer\t\"code\"\t"
-    "Adds code which will be executed some small amount of time after the current code finishes. Identical to runloop()");
+#ifndef EELSCRIPT_HELP_NO_DEFER_DESC
+    "Adds code which will be executed some small amount of time after the current code finishes. Identical to runloop()"
+#endif
+    );
   fs->Add("runloop\t\"code\"\t"
-    "Adds code which will be executed some small amount of time after the current code finishes. Identical to defer()");
+#ifndef EELSCRIPT_HELP_NO_DEFER_DESC
+    "Adds code which will be executed some small amount of time after the current code finishes. Identical to defer()"
+#endif
+    );
 
   p = eel_eval_function_reference;
   while (*p) { fs->Add(p); p += strlen(p) + 1; }
@@ -721,3 +765,5 @@ void EELScript_GenerateFunctionList(WDL_PtrList<const char> *fs)
 
 
 #endif
+
+#undef opaque
