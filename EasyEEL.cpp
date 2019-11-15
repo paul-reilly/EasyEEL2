@@ -1,6 +1,8 @@
 #include "EasyEEL.h"
 #include <iostream>
 #include <algorithm>
+#include <cstring>
+
 
 
 EELVM::EELVM(std::vector<const char*> sections) : m_code_names(sections)

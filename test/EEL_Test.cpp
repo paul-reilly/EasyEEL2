@@ -9,8 +9,9 @@
 class App
 {
 public:
-    App()  :  mVM(getThis(), {"@code", "@bling", "@blop", "@blam"}, "script.eel"),
-              mMemberValue(19.)
+    App() 
+        : mVM(getThis(), {"@code", "@bling", "@blop", "@blam"}, "script.eel")
+        , mMemberValue(19.)
     {
         mVM.registerFunction("sayHello",       0, &App::sayHello);
         mVM.registerFunction("getMemberValue", 0, &App::getMemberValue);

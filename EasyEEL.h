@@ -20,7 +20,10 @@ EELVM.h
 
 
 ---------------------------------------------------------------------------*/
-
+#ifndef _WIN32
+ #include "WDL/SWELL/swell-types.h"
+#endif
+#include "./WDL/wdltypes.h"
 #include "./WDL/eel2/ns-eel.h"
 #include "./WDL/eel2/ns-eel-addfuncs.h"
 #include "./WDL/lineparse.h"
