@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.00)
+cmake_minimum_required(VERSION 3.13)
 
 project(easyeel2-test)
 
@@ -6,19 +6,21 @@ add_executable(test
   EEL_Test.cpp
 )
 
-add_subdirectory(../ eel-build)
+set(CMAKE_CXX_FLAGS "-DWDL_NO_DEFINE_MINMAX")
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-  set(SRCS
-    ../WDL/swell/swell.h
-    ../WDL/swell/swell.cpp
+  target_compile_options(test PRIVATE
+    -no-rtti
   )
 else()
-  set( LINK_FLAGS 
-      "/MACHINE:X64 /Zc:inline /fp:precise" 
+  target_compile_options(test PRIVATE
+    /EHsc /GR-
+  )
+  target_link_options(test PRIVATE
+    /machine:x64
   )
 endif()
 
+add_subdirectory(../ eel2lib-build)
 target_link_libraries(test easyeel2)
 
-set(CMAKE_CXX_FLAGS "-DWDL_NO_DEFINE_MINMAX")
