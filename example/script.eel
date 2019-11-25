@@ -1,0 +1,37 @@
+@code
+  // call static method
+  sayHello(); 
+  print(42 * 2);
+  
+  a = "iojiO";
+
+  b = #;
+
+  d = getMemberValue();
+  printf("Hello, printed from EEL2\n");
+
+  test_str = "printf'ing a test string: %d\n";
+  printf(test_str, 42);
+
+  function byTwo(x)
+    local ()
+  (
+    x * 2; // last statement in function is return value
+  );
+  
+  g = 10;
+
+  while (g > 0) 
+  (
+    d = d * 2;
+    g -= 1;
+  );
+  
+  d = byTwo(d);
+  a = 1555.42;
+
+
+@bling
+
+  bloppy = 5;
+  oisjdf = 5;
