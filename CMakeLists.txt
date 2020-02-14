@@ -27,7 +27,7 @@ add_library(common_files OBJECT
 )
 
 add_library(easyeel2 STATIC ${SRCS} $<TARGET_OBJECTS:common_files> )
-target_compile_options(easyeel2 PRIVATE cxx_std_17)
+target_compile_features(easyeel2 PRIVATE cxx_std_17)
 add_executable(tests ${SRCS})
 set_target_properties(tests PROPERTIES CXX_STANDARD 17 EXCLUDE_FROM_ALL True)
 target_compile_definitions(easyeel2 PRIVATE -DDOCTEST_CONFIG_DISABLE)
