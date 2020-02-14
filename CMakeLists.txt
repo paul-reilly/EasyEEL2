@@ -28,9 +28,11 @@ add_library(common_files OBJECT
 
 add_library(easyeel2 STATIC ${SRCS} $<TARGET_OBJECTS:common_files> )
 target_compile_features(easyeel2 PRIVATE cxx_std_17)
-add_executable(tests ${SRCS})
-set_target_properties(tests PROPERTIES CXX_STANDARD 17 EXCLUDE_FROM_ALL True)
 target_compile_definitions(easyeel2 PRIVATE -DDOCTEST_CONFIG_DISABLE)
+
+add_executable(tests ${SRCS})
+target_compile_features(tests PRIVATE cxx_std_17)
+set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL True)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   target_sources(easyeel2 PRIVATE external/WDL/eel2/asm-nseel-x64.o)
