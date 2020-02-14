@@ -5,7 +5,7 @@ project(EasyEEL2)
 enable_testing()
 
 set(SRCS
-  EasyEEL.cpp
+  src/EasyEEL.cpp
   test-script.eel
 )
 
@@ -27,7 +27,7 @@ add_library(common_files OBJECT
 )
 
 add_library(easyeel2 STATIC ${SRCS} $<TARGET_OBJECTS:common_files> )
-set_target_properties(easyeel2 PROPERTIES CXX_STANDARD 17)
+target_compile_options(easyeel2 PRIVATE cxx_std_17)
 add_executable(tests ${SRCS})
 set_target_properties(tests PROPERTIES CXX_STANDARD 17 EXCLUDE_FROM_ALL True)
 target_compile_definitions(easyeel2 PRIVATE -DDOCTEST_CONFIG_DISABLE)
