@@ -6,7 +6,7 @@ add_executable(example
   EEL_Test.cpp
 )
 
-include_directories(../deps)
+include_directories(../external)
 
 target_compile_definitions(example PRIVATE
   -DWDL_NO_DEFINE_MINMAX -DDOCTEST_CONFIG_DISABLE -D_CRT_SECURE_NO_WARNINGS
