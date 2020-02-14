@@ -140,8 +140,7 @@ auto EELVM::SetCodeSection(std::string tok, int parsestate,
   -> bool
 {   
     if (parsestate < 0) return false;
-    std::cout << "------------v----------------------------------v-------------------\n";
-    std::cout << "SetCodeSection, token: " << tok << "\n" << curblock.Get() << std::endl;
+
     auto code_handle = compileBlock(VM, curblock, lineoffs, results);
     if (!code_handle) return false;
 
