@@ -3,7 +3,7 @@
 #else
  #define DOCTEST_CONFIG_IMPLEMENT
 #endif
-#include "doctest.h"
+#include "../doctest.h"
 
 #include "EasyEEL.h"
 #include <optional>
