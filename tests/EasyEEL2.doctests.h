@@ -38,12 +38,18 @@ a += 1;
         CHECK(vm.getCodeHandlesSize() == 2);
     }
     SUBCASE("execution") {
+        vm.compileStream(code, results);
+        INFO(results.Get());
+        CHECK(results.GetLength() == 0);
+        CHECK(vm.getCodeHandlesSize() == 2);
         CHECK(vm.executeHandle("@code") == true);
         INFO(results.Get());
     }
     *a = 100.;
 
     SUBCASE("change registered var script") {
+        vm.compileStream(code, results);
+        INFO(results.Get());
         CHECK(vm.executeHandle(1) == true);
         CHECK(*a == 101);
     }
@@ -60,8 +66,6 @@ TEST_CASE("EEL2 parsing") {
     CHECK(lp.gettoken_str(0)[0] == '@');
 }
 
-
-
 TEST_CASE("EasyEEL2: compile file with 3 sections") {
     EELVM vm({"@code", "@bling", "@alwayslast"}, "test-script.eel");
     WDL_FastString results;
@@ -76,8 +80,6 @@ TEST_CASE("EasyEEL2: compile file with 3 sections") {
     }  
 }
 
-
-
 TEST_CASE("EasyEEL2: string tests") {
     EELVM vm({"@code"});
     WDL_FastString results;
@@ -90,6 +92,7 @@ a = "U";
         CHECK(results.GetLength() == 0);
     }
     SUBCASE("execution") {
+        CHECK(vm.compileStream(code, results));
         INFO(results.Get());
         CHECK(vm.executeHandle(0) == true);
     }
