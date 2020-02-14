@@ -22,7 +22,7 @@ TEST_CASE("EasyEEL2: compile and execute stringstream") {
     std::istringstream code(R"__(@code
 
 a = 42;
-printf("This is FUCKING EXECUTING!!!!");
+printf("This is executing.");
 
 @numpty
 

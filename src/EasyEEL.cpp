@@ -267,7 +267,7 @@ auto EELVM::compileFile(WDL_FastString &results)
 
 
 #ifndef DOCTEST_CONFIG_DISABLE 
- #include "EasyEEL2.doctests.h"
+ #include "../tests/EasyEEL2.doctests.h"
 #endif
 
 

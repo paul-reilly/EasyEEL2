@@ -6,7 +6,7 @@ enable_testing()
 
 set(SRCS
   src/EasyEEL.cpp
-  test-script.eel
+  tests/test-script.eel
 )
 
 include_directories(external)
@@ -60,7 +60,7 @@ add_custom_target(easyeel2-libonly
 
 add_custom_command(TARGET tests POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E create_symlink
-  ${CMAKE_CURRENT_SOURCE_DIR}/test-script.eel
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test-script.eel
   ${CMAKE_CURRENT_BINARY_DIR}/test-script.eel
   COMMENT "Creating symlink to test-script.eel at: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 )
