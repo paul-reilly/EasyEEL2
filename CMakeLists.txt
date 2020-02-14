@@ -9,21 +9,21 @@ set(SRCS
   test-script.eel
 )
 
-include_directories(deps)
+include_directories(external)
 
 add_library(common_files OBJECT
-  deps/WDL/lineparse.h
-  deps/WDL/assocarray.h
-  deps/WDL/chunkalloc.h
-  deps/WDL/fft.c
-  deps/WDL/eel2/nseel-caltab.c
-  deps/WDL/eel2/nseel-cfunc.c
-  deps/WDL/eel2/nseel-compiler.c
-  deps/WDL/eel2/nseel-eval.c
-  deps/WDL/eel2/nseel-lextab.c
-  deps/WDL/eel2/nseel-ram.c
-  deps/WDL/eel2/nseel-yylex.c
-  #deps/WDL/eel2/ns-eel.h
+  external/WDL/lineparse.h
+  external/WDL/assocarray.h
+  external/WDL/chunkalloc.h
+  external/WDL/fft.c
+  external/WDL/eel2/nseel-caltab.c
+  external/WDL/eel2/nseel-cfunc.c
+  external/WDL/eel2/nseel-compiler.c
+  external/WDL/eel2/nseel-eval.c
+  external/WDL/eel2/nseel-lextab.c
+  external/WDL/eel2/nseel-ram.c
+  external/WDL/eel2/nseel-yylex.c
+  #external/WDL/eel2/ns-eel.h
 )
 
 add_library(easyeel2 STATIC ${SRCS} $<TARGET_OBJECTS:common_files> )
@@ -33,13 +33,13 @@ set_target_properties(tests PROPERTIES CXX_STANDARD 17 EXCLUDE_FROM_ALL True)
 target_compile_definitions(easyeel2 PRIVATE -DDOCTEST_CONFIG_DISABLE)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-  target_sources(easyeel2 PRIVATE deps/WDL/eel2/asm-nseel-x64.o)
+  target_sources(easyeel2 PRIVATE external/WDL/eel2/asm-nseel-x64.o)
   set(OPTS -Wno-format-truncation)
   target_compile_options(common_files PRIVATE ${OPTS})
   target_compile_options(easyeel2 PRIVATE ${OPTS})
   target_compile_options(tests PRIVATE ${OPTS})
 else()
-  target_sources(easyeel2 PRIVATE deps/WDL/eel2/asm-nseel-x64.obj)
+  target_sources(easyeel2 PRIVATE external/WDL/eel2/asm-nseel-x64.obj)
   set(DEFS -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
   target_compile_definitions(common_files PRIVATE ${DEFS})
   target_compile_definitions(easyeel2 PRIVATE ${DEFS})
