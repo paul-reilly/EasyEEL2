@@ -6,8 +6,6 @@ add_executable(example
   EEL_Test.cpp
 )
 
-include_directories(../external)
-
 target_compile_definitions(example PRIVATE
   -DWDL_NO_DEFINE_MINMAX -DDOCTEST_CONFIG_DISABLE -D_CRT_SECURE_NO_WARNINGS
 )
@@ -25,8 +23,12 @@ else()
   )
 endif()
 
-add_subdirectory(../ eel2lib-build EXCLUDE_FROM_ALL)
+add_subdirectory(${CMAKE_SOURCE_DIR}/../ eel2lib-build EXCLUDE_FROM_ALL)
 target_link_libraries(example easyeel2)
+target_include_directories(example PRIVATE 
+    ${CMAKE_SOURCE_DIR}/../include/
+    ${CMAKE_SOURCE_DIR}/../external/
+)
 
 add_custom_command(TARGET example POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E create_symlink
