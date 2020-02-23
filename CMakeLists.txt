@@ -2,14 +2,11 @@ cmake_minimum_required(VERSION 3.13)
 
 project(EasyEEL2)
 
-enable_testing()
-
 set(SRCS
   src/EasyEEL.cpp
+  include/EasyEEL.h
   tests/test-script.eel
 )
-
-include_directories(external)
 
 add_library(common_files OBJECT
   external/WDL/lineparse.h
@@ -25,14 +22,17 @@ add_library(common_files OBJECT
   external/WDL/eel2/nseel-yylex.c
   #external/WDL/eel2/ns-eel.h
 )
+target_include_directories(common_files PRIVATE external)
 
 add_library(easyeel2 STATIC ${SRCS} $<TARGET_OBJECTS:common_files> )
 target_compile_features(easyeel2 PRIVATE cxx_std_17)
 target_compile_definitions(easyeel2 PRIVATE -DDOCTEST_CONFIG_DISABLE)
+target_include_directories(easyeel2 PRIVATE include external)
 
 add_executable(tests ${SRCS})
 target_compile_features(tests PRIVATE cxx_std_17)
 set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL True)
+target_include_directories(tests PRIVATE include external)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   target_sources(easyeel2 PRIVATE external/WDL/eel2/asm-nseel-x64.o)
@@ -54,15 +54,20 @@ target_link_libraries(tests PRIVATE easyeel2)
 set(CMAKE_CXX_FLAGS 
   -DWDL_NO_DEFINE_MINMAX
 )
-add_test(NAME test COMMAND tests)
 
 add_custom_target(easyeel2-libonly
     COMMAND ninja easyeel2
 )
 
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+  set(OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
+else()
+  set(OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+endif()
+
 add_custom_command(TARGET tests POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E create_symlink
-  ${CMAKE_CURRENT_SOURCE_DIR}/tests/test-script.eel
-  ${CMAKE_CURRENT_BINARY_DIR}/test-script.eel
-  COMMENT "Creating symlink to test-script.eel at: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/test-script.eel
+    ${OUTPUT_DIR}/test-script.eel
+  COMMENT "Creating symlink to test-script.eel at: ${OUTPUT_DIR}"
 )

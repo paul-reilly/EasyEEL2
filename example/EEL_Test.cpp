@@ -3,7 +3,7 @@
 //
 
 
-#include "../src/EasyEEL.h"
+#include "EasyEEL.h"
 #include <iostream> 
 
 #include "WDL/wdltypes.h"

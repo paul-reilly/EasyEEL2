@@ -28,9 +28,9 @@ EELVM.h
 #include "WDL/eel2/ns-eel.h"
 //#include "WDL/eel2/ns-eel-addfuncs.h"
 #include "WDL/wdlcstring.h"
-#include "WDL/dirscan.h"
+#include <WDL/dirscan.h>
 #include "WDL/queue.h"
-#include "WDL/assocarray.h"
+#include <WDL/assocarray.h>
 #include <string>
 #include <istream>
 #include <vector>
@@ -64,10 +64,10 @@ public:
     bool compileFile(WDL_FastString &results);
     bool executeHandle(int h);
     bool executeHandle(std::string section_name);
-    eel_string_context_state* _eel_str_ctx;
     int getCodeHandlesSize() { return _codehandles.GetSize(); }
 
-    
+    eel_string_context_state* _eel_str_ctx = nullptr;
+
 private:
     bool SetCodeSection(std::string tok, int parsestate, const WDL_FastString &curblock, WDL_FastString &results, int lineoffs);
     NSEEL_VMCTX VM;
