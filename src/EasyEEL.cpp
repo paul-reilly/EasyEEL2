@@ -106,7 +106,6 @@ auto EELVM::executeHandle(int h)
 auto EELVM::executeHandle(std::string section_name)
   -> bool
 {
-    std::cout << "executing: >" << section_name << "<\n";
     auto iter = _handle_map.find(section_name);
     if (iter != _handle_map.end())
     {
