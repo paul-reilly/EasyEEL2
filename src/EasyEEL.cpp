@@ -1,7 +1,5 @@
 #ifndef DOCTEST_CONFIG_DISABLE
  #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#else
- #define DOCTEST_CONFIG_IMPLEMENT
 #endif
 #include "../doctest.h"
 
@@ -266,7 +264,110 @@ auto EELVM::compileFile(WDL_FastString &results)
 
 
 #ifndef DOCTEST_CONFIG_DISABLE 
- #include "../tests/EasyEEL2.doctests.h"
+// need these implemented for EEL2 to compile
+void NSEEL_HOSTSTUB_EnterMutex() { }
+void NSEEL_HOSTSTUB_LeaveMutex() { }
 #endif
+
+static
+auto compile(EELVM& vm, WDL_FastString& results)
+-> bool
+{
+    vm.compileFile(results);
+    INFO(results.Get());
+    auto ok = results.GetLength() == 0;
+    return ok;
+}
+
+TEST_CASE("EasyEEL2: compile and execute stringstream") {
+    EELVM vm({ "@code", "@numpty" });
+    WDL_FastString results;
+    std::istringstream code(R"__(
+        @code
+        // iejrotijeirjtoe
+        a = 12; 
+        printf("This is executing.");
+        /* ioijiosdjf
+            isodijfiosdjf
+        */
+        
+        @numpty
+        // comment a += 19999;
+        /* a += 200000;
+        multiline   
+        */ a += 1;
+        b = 2;
+
+    )__");
+
+    auto* a = vm.registerVar("a");
+    SUBCASE("compilation") {
+        vm.compileStream(code, results);
+        INFO(results.Get());
+        CHECK(results.GetLength() == 0);
+        CHECK(vm.getCodeHandlesSize() == 2);
+    }
+    SUBCASE("execution") {
+        vm.compileStream(code, results);
+        INFO(results.Get());
+        CHECK(results.GetLength() == 0);
+        CHECK(vm.getCodeHandlesSize() == 2);
+        CHECK(vm.executeHandle(0) == true);
+        CHECK(vm.executeHandle("@numpty") == true);
+    }
+    *a = 100.;
+
+    SUBCASE("change registered var script") {
+        vm.compileStream(code, results);
+        INFO(results.Get());
+        CHECK(vm.executeHandle(1) == true);
+        CHECK(*a == 101);
+    }
+}
+
+TEST_CASE("EEL2 parsing") {
+    LineParser lp(true);
+    auto is = std::istringstream("@code;\n a = 1; ");
+    std::vector<char> buffer(4096, 0);
+    is.read(buffer.data(), 4096);
+    char* linebuf = buffer.data();
+    CHECK(!lp.parse(linebuf));
+    CHECK(lp.getnumtokens() > 0);
+    CHECK(lp.gettoken_str(0)[0] == '@');
+}
+
+TEST_CASE("EasyEEL2: compile file with 3 sections") {
+    EELVM vm({ "@code", "@bling", "@alwayslast" }, "test-script.eel");
+    WDL_FastString results;
+    CHECK(compile(vm, results));
+    INFO("#codehandles = " << vm.getCodeHandlesSize());
+    SUBCASE("number of code handles") {
+        CHECK(vm.getCodeHandlesSize() == 3);
+    }
+    SUBCASE("execute first section") {
+        INFO(results.Get());
+        CHECK(vm.executeHandle("@code") == true);
+    }
+}
+
+TEST_CASE("EasyEEL2: string tests") {
+    EELVM vm({ "@code" });
+    WDL_FastString results;
+    std::istringstream code(R"__(
+        @code
+        a = "U";
+    )__");
+    SUBCASE("compilation") {
+        CHECK(vm.compileStream(code, results));
+        INFO(results.Get());
+        CHECK(results.GetLength() == 0);
+    }
+    SUBCASE("execution") {
+        CHECK(vm.compileStream(code, results));
+        INFO(results.Get());
+        CHECK(vm.executeHandle(0) == true);
+    }
+}
+
 
 
