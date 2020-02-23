@@ -11,7 +11,7 @@ branches:
   only:
     - master
 
-build-script:
+build_script:
     - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
     - mkdir build-msvc
     - cd build-msvc
