@@ -9,6 +9,8 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
+
 #define opaque ((void *)this)
 #define EEL_STRING_GET_CONTEXT_POINTER(opaque) (((EELVM *)opaque)->_eel_str_ctx)
 #ifndef EEL_STRING_STDOUT_WRITE
@@ -19,6 +21,7 @@
 #undef opaque
 #include "WDL/eel2/eel_strings.h"
 #include "WDL/eel2/eel_misc.h"
+
 
 static 
 auto commonInit(EELVM *this_, NSEEL_VMCTX &VM)
@@ -149,59 +152,56 @@ auto EELVM::SetCodeSection(std::string tok, int parsestate,
     return true;
 }
 
-// parses lines in stream for our @XXXX blocks, gathers the lines
-// together and into seperate code handles
+// parses lines in stream for our @abcde sections, gathers the lines
+// together and calls SetCodeSection
 auto EELVM::compileStream(std::istream &stream, WDL_FastString &results)
   -> bool
 {
+    enum ParseState {
+        kMidComment = -3
+    };
     bool comment_state = false;
     int parsestate = -1, cursec_lineoffs = 0, lineoffs = 0;
     WDL_FastString curblock;
     curblock.SetLen(512);
     std::string cur_tok, last_tok;
+
     for (std::string line; std::getline(stream, line);) {
+        // getline strips system line breaks, null \r too to catch strays
+        const auto length = line.length();
+        if (length && line[length - 1] == '\r') 
+            line[length - 1] = '\0';
+
         lineoffs++;
         char* linebuf = &line[0];
-
-        // strip trailing line endings
-        {
-            char* p = linebuf + line.length() - 1;
-            while (p >= linebuf && (*p == '\r' || *p == '\n')) {
-                *p = 0;  p--;
-            }
-            ++p;
-            *p = '\0';
-        }
-        
         LineParser lp(comment_state);
         if (linebuf[0]
-            && !lp.parse(linebuf) // parse errors are non-zero
+            && lp.parse(linebuf) == 0 // parse errors are non-zero
             && lp.getnumtokens() > 0 
-            && lp.gettoken_str(0)[0] == '@') 
+            && lp.gettoken_str(0)[0] == '@')
         {
             auto tmp = lp.gettoken_str(0);
             if (tmp != cur_tok) 
                 last_tok = cur_tok;
             cur_tok = tmp;
-            int x;
-            int sz_section_names = _section_names.size();
-            for (x = 0; x < sz_section_names && cur_tok != _section_names[x]; x++);
+            
+            auto it = std::find(_section_names.begin(), _section_names.end(), cur_tok);
+            
+            if (it != _section_names.end()) {
+                if (parsestate >= 0)
+                    SetCodeSection(last_tok, parsestate, curblock, results, cursec_lineoffs);
 
-            if (x < sz_section_names) {
-                if (!SetCodeSection(last_tok, parsestate, curblock, results, cursec_lineoffs)) {
-                    //results.Append("\tparsestate out of range");
-                }
-                parsestate = x;
+                parsestate = it - _section_names.begin();
                 cursec_lineoffs = lineoffs;
                 curblock.Set("");
             } 
             else {
-                results.AppendFormatted(1024, "\tWarning: Unknown directive: %s\r\n", cur_tok.c_str());
+                results.AppendFormatted(1024, "\tWarning: Undeclared section: %s\r\n", cur_tok.c_str());
             }
         } 
         else {
             const char *p = linebuf;
-            if (parsestate == -3) {
+            if (parsestate == ParseState::kMidComment) {
                 while (*p) {
                     if (p[0] == '*' && p[1] == '/') {
                         parsestate = -1; // end of comment!
@@ -214,10 +214,11 @@ auto EELVM::compileStream(std::istream &stream, WDL_FastString &results)
             if (parsestate == -1 && p[0]) {
                 while (*p == ' ' || *p == '\t') p++;
                 if (!*p || (p[0] == '/' && p[1] == '/')) {
+                    // do nothing
                 } 
                 else {
                     if (*p == '/' && p[1] == '*') {
-                        parsestate = -3;
+                        parsestate = ParseState::kMidComment;
                     } 
                     else {
                         results.AppendFormatted(1024 
@@ -228,6 +229,7 @@ auto EELVM::compileStream(std::istream &stream, WDL_FastString &results)
                     }
                 }
             }
+
             if (parsestate >= 0) {
                 curblock.Append(linebuf);
                 curblock.Append("\n");
@@ -235,9 +237,7 @@ auto EELVM::compileStream(std::istream &stream, WDL_FastString &results)
         }
     };
 
-    if (!SetCodeSection(cur_tok, parsestate, curblock, results, cursec_lineoffs)) {
-        //results.Append("\tparsestate out of range");
-    }
+    SetCodeSection(cur_tok, parsestate, curblock, results, cursec_lineoffs);
     return results.GetLength() == 0;
 }
 
