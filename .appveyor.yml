@@ -1,0 +1,24 @@
+
+platform:
+    - 64
+    
+configuration:
+    - Debug
+    
+# whitelist branches to avoid testing feature branches twice (as branch and as pull request)
+branches:
+  only:
+    - master
+
+environment:
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      BUILD_TARGERT: windows_msvc
+
+build-script:
+	- mkdir build-msvc
+	- cd build-msvc
+	- cmake -G "Visual Studio 16 2019" ..
+	- msbuild EasyEel2.sln
+	- tests
+	- cd ..
