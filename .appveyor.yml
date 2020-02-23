@@ -1,21 +1,18 @@
+image: Visual Studio 2019
 
 platform:
-    - 64
+	- 64
     
 configuration:
-    - Debug
+	- Debug
     
 # whitelist branches to avoid testing feature branches twice (as branch and as pull request)
 branches:
   only:
-    - master
-
-environment:
-  matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      BUILD_TARGERT: windows_msvc
+	- master
 
 build-script:
+	- call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 	- mkdir build-msvc
 	- cd build-msvc
 	- cmake -G "Visual Studio 16 2019" ..
