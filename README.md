@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/o7fom4c0rswr1cs7/branch/master?svg=true)](https://ci.appveyor.com/project/paul-reilly/easyeel2/branch/master)
+
 EEL2 is the JIT compiled scripting language and implementation from [Cockos Inc's WDL framework](https://www.cockos.com/wdl/).
 
 This EasyEEL2 library is for convenient inclusion and usage and doesn't intend to offer the flexibility of the underlying library. Include as a git submodule and use as a CMake subdirectory:
