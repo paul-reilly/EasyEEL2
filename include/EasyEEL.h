@@ -21,7 +21,7 @@ EELVM.h
 
 ---------------------------------------------------------------------------*/
 #ifndef _WIN32
- #include "WDL/SWELL/swell-types.h"
+ #include "WDL/swell/swell-types.h"
 #endif
 //#include "WDL/wdltypes.h"
 #include "WDL/ptrlist.h"
