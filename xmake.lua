@@ -20,7 +20,7 @@ target("eel2")
        "external/WDL/assocarray.h",
        "external/WDL/chunkalloc.h"
     )
-    add_includedirs("external", { public = true })
+    add_includedirs("external/WDL", { public = true })
     add_defines("WDL_NO_DEFINE_MINMAX", { public = true })
     if is_plat("linux") then
         add_files("external/WDL/eel2/asm-nseel-x64.o")
