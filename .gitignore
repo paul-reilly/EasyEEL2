@@ -2,3 +2,5 @@
 out/
 linux-build/
 build*/
+**/.xmake/
+.vscode/
