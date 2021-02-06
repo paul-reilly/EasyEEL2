@@ -5,18 +5,17 @@ platform:
     
 configuration:
     - Debug
+
+install:
+    - ps: Invoke-Expression (Invoke-Webrequest 'https://xmake.io/psget.text' -UseBasicParsing).Content
     
 # whitelist branches to avoid testing feature branches twice (as branch and as pull request)
 branches:
   only:
     - master
+    - appveyor
 
 build_script:
     - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
-    - mkdir build-msvc
-    - cd build-msvc
-    - cmake -G "Visual Studio 16 2019" ..
-    - msbuild EasyEel2.sln
-    - cd Debug
-    - tests
-    - cd ..
+    - xmake build tests
+    - xmake run tests
