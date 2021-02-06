@@ -6,26 +6,26 @@ add_requires("doctest")
 target("eel2")
    set_kind("object")
    add_files(
-       "external/WDL/fft.c",
-       "external/WDL/eel2/nseel-caltab.c",
-       "external/WDL/eel2/nseel-cfunc.c",
-       "external/WDL/eel2/nseel-compiler.c",
-       "external/WDL/eel2/nseel-eval.c",
-       "external/WDL/eel2/nseel-lextab.c",
-       "external/WDL/eel2/nseel-ram.c",
-       "external/WDL/eel2/nseel-yylex.c"
+       "external/WDL/WDL/fft.c",
+       "external/WDL/WDL/eel2/nseel-caltab.c",
+       "external/WDL/WDL/eel2/nseel-cfunc.c",
+       "external/WDL/WDL/eel2/nseel-compiler.c",
+       "external/WDL/WDL/eel2/nseel-eval.c",
+       "external/WDL/WDL/eel2/nseel-lextab.c",
+       "external/WDL/WDL/eel2/nseel-ram.c",
+       "external/WDL/WDL/eel2/nseel-yylex.c"
     )
     add_headerfiles(
-       "external/WDL/lineparse.h",
-       "external/WDL/assocarray.h",
-       "external/WDL/chunkalloc.h"
+       "external/WDL/WDL/lineparse.h",
+       "external/WDL/WDL/assocarray.h",
+       "external/WDL/WDL/chunkalloc.h"
     )
     add_includedirs("external/WDL", { public = true })
     add_defines("WDL_NO_DEFINE_MINMAX", { public = true })
     if is_plat("linux") then
-        add_files("external/WDL/eel2/asm-nseel-x64.o")
+        add_files("external/WDL/WDL/eel2/asm-nseel-x64.o")
     else
-        add_files("external/WDL/eel2/asm-nseel-x64.obj")
+        add_files("external/WDL/WDL/eel2/asm-nseel-x64.obj")
         add_defines("_CRT_SECURE_NO_WARNINGS", "_CRT_NONSTDC_NO_DEPRECATE")
     end
 
