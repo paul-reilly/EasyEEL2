@@ -17,5 +17,5 @@ branches:
 
 build_script:
     - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
-    - xmake build tests
+    - xmake build -yv tests
     - xmake run tests
