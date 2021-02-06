@@ -5,7 +5,6 @@ add_requires("doctest")
 
 target("eel2")
    set_kind("object")
-   --if is_plat("linux") then add_cxflags("-fPIC") end
    add_files(
        "external/WDL/fft.c",
        "external/WDL/eel2/nseel-caltab.c",
