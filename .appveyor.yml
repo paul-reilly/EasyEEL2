@@ -8,6 +8,7 @@ configuration:
 
 install:
     - ps: Invoke-Expression (Invoke-Webrequest 'https://xmake.io/psget.text' -UseBasicParsing).Content
+    - git submodule update --init --recursive
     
 # whitelist branches to avoid testing feature branches twice (as branch and as pull request)
 branches:
