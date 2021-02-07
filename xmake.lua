@@ -23,7 +23,8 @@ target("eel2")
     add_includedirs("external/WDL", { public = true })
     add_defines("WDL_NO_DEFINE_MINMAX", { public = true })
     if is_plat("linux") then
-        add_files("external/WDL/WDL/eel2/asm-nseel-x64.o")
+        set_toolset("as", "nasm")
+        add_files("external/WDL/WDL/eel2/asm-nseel-x64.asm")
     else
         add_files("external/WDL/WDL/eel2/asm-nseel-x64.obj")
         add_defines("_CRT_SECURE_NO_WARNINGS", "_CRT_NONSTDC_NO_DEPRECATE")
