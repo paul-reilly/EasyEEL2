@@ -6,6 +6,7 @@ This EasyEEL2 library is for convenient inclusion and usage and doesn't intend t
 
 **To build library:**
 ```
+git clone --recurse-submodules https://github.com/paul-reilly/EasyEEL2.git
 xmake
 ```
 
